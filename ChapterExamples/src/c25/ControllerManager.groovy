@@ -34,7 +34,7 @@ class ControllerManager implements CSProcess{
 	int currentPlayer = 0;
 	
 	void run(){
-		
+		//fail
 		
 		def int gap = 5
 		def offset = [gap, gap]
