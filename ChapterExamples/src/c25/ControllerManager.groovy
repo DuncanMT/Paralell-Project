@@ -31,7 +31,9 @@ class ControllerManager implements CSProcess{
 	int minPairs = 3
 	int maxPairs = 6
 	int boardSize = 5
-	int currentPlayer = 0;
+	int nextPlayerid = 0 
+	def playerIds = []
+	
 	
 	void run(){
 		
@@ -187,37 +189,9 @@ class ControllerManager implements CSProcess{
 			
 			while (running){
 				def o = fromPlayers.read()
-				for(int i=0; i< 2; i++){
-					
-					def playerDetails = fromPlayers.read()
-					def playerName = playerDetails.name
-					def playerToAddr = playerDetails.toPlayerChannelLocation
-					def playerToChan = NetChannel.one2net(playerToAddr)
-					//println "name: ${playerDetails.name}"
-					
-						currentPlayerId = availablePlayerIds.pop()
-						playerNames[currentPlayerId].write(playerName)
-						pairsWon[currentPlayerId].write(" " + 0)
-						toPlayers[currentPlayerId] = playerToChan 
-						toPlayers[currentPlayerId].write(new EnrolDetails(id: currentPlayerId) )
-						playerMap.put(currentPlayerId, [playerName, 0]) // [name, pairs claimed]
-						def ggd = fromPlayers.read()
-						def id = ggd.id
-						toPlayers[id].write(new GameDetails( playerDetails: playerMap,
-															  pairsSpecification: pairsMap,
-															 gameId: gameId))
-					
-				}
-				for(int i=0; i< 2; i++){
-					def ggd = fromPlayers.read()
-					def id = ggd.id
-					toPlayers[id].write(new GameDetails( playerDetails: playerMap,
-														  pairsSpecification: pairsMap,
-														 gameId: gameId))
-				}
 				
 								
-				/*if ( o instanceof EnrolPlayer) {
+				if ( o instanceof EnrolPlayer) {
 					def playerDetails = (EnrolPlayer)o
 					def playerName = playerDetails.name
 					def playerToAddr = playerDetails.toPlayerChannelLocation
@@ -225,6 +199,8 @@ class ControllerManager implements CSProcess{
 					//println "name: ${playerDetails.name}"
 					if (availablePlayerIds.size() > 0) {
 						currentPlayerId = availablePlayerIds.pop()
+						playerIds.add(currentPlayerId)
+						println "playerIds $playerIds"
 						playerNames[currentPlayerId].write(playerName)
 						pairsWon[currentPlayerId].write(" " + 0)
 						toPlayers[currentPlayerId] = playerToChan 
@@ -236,41 +212,54 @@ class ControllerManager implements CSProcess{
 						playerToChan.write(new EnrolDetails(id: -1))
 						
 					}					
-				}*/
+				}
 				
-				 /*else if ( o instanceof GetGameDetails) {
+				 else if ( o instanceof GetGameDetails) {
 					def ggd = (GetGameDetails)o
 					def id = ggd.id
 					toPlayers[id].write(new GameDetails( playerDetails: playerMap,
 													 	 pairsSpecification: pairsMap,
-														 gameId: gameId))*/
-				 /*else if ( o instanceof ClaimPair) {
+														 gameId: gameId))
+					println "Board Update"
+				 }
+				 else if ( o instanceof ClaimPair) {
 					def claimPair = (ClaimPair)o
-					def gameNo = claimPair.gameId
-					def id = claimPair.id
-					def p1 = claimPair.p1
-					def p2 = claimPair.p2
-					if ( gameId == gameNo){
-						if ((pairsMap.get(p1) != null) ) {
-							// pair can be claimed
-							//println "before remove of $p1, $p2"
-							//pairsMap.each {println "$it"}
-							pairsMap.remove(p2)
-							pairsMap.remove(p1)
-							//println "after remove of $p1, $p2"
-							//pairsMap.each {println "$it"}
-							def playerState = playerMap.get(id)
-							playerState[1] = playerState[1] + 1
-							pairsWon[id].write(" " + playerState[1])
-							playerMap.put(id, playerState)
-							pairsUnclaimed = pairsUnclaimed - 1
-							running = (pairsUnclaimed != 0)
-						} 
-						else {
-							//println "cannot claim pair: $p1, $p2"
+					if(claimPair.id == nextPlayerid){
+						def gameNo = claimPair.gameId
+						def id = claimPair.id
+						def p1 = claimPair.p1
+						def p2 = claimPair.p2
+						if ( gameId == gameNo){
+							if ((pairsMap.get(p1) != null) ) {
+								// pair can be claimed
+								//println "before remove of $p1, $p2"
+								//pairsMap.each {println "$it"}
+								pairsMap.remove(p2)
+								pairsMap.remove(p1)
+								//println "after remove of $p1, $p2"
+								//pairsMap.each {println "$it"}
+								def playerState = playerMap.get(id)
+								playerState[1] = playerState[1] + 1
+								pairsWon[id].write(" " + playerState[1])
+								playerMap.put(id, playerState)
+								pairsUnclaimed = pairsUnclaimed - 1
+								running = (pairsUnclaimed != 0)
+							} 
+							else {
+								//println "cannot claim pair: $p1, $p2"
+							}
 						}
-					}	
-				} else {
+						def temp = playerIds.sort().reverse()
+						if(nextPlayerid >= temp[0]){
+							nextPlayerid = 0
+							println "Next PlayerID $nextPlayerid"
+						} else {
+							 nextPlayerid++
+							 println "Next PlayerID $nextPlayerid"
+						}
+					}
+					
+				 }else {
 					def withdraw = (WithdrawFromGame)o
 					def id = withdraw.id
 					def playerState = playerMap.get(id)
@@ -280,7 +269,7 @@ class ControllerManager implements CSProcess{
 					toPlayers[id] = null
 					availablePlayerIds << id
 					availablePlayerIds =  availablePlayerIds.sort().reverse()
-				}*/
+				}
 				
 				
 				// end else if chain

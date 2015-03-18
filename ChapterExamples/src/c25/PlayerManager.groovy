@@ -56,7 +56,7 @@ class PlayerManager implements CSProcess {
 				for ( y in 0..(boardSize-1)){
 					def int xPos = offset[0]+(gap*x)+ (side*x)
 					def int yPos = offset[1]+(gap*y)+ (side*y)
-					print " $x, $y, $xPos, $yPos, $cg, "
+					//print " $x, $y, $xPos, $yPos, $cg, "
 					display[cg] = new GraphicsCommand.SetColor(Color.WHITE)
 					cg = cg+1
 					display[cg] = new GraphicsCommand.FillRect(xPos, yPos, side, side)
@@ -137,8 +137,8 @@ class PlayerManager implements CSProcess {
 		IPconfig.write("Now Connected - sending your name to Controller")
 		def enrolPlayer = new EnrolPlayer( name: playerName,
 										   toPlayerChannelLocation: fromControllerLoc)
-		toController.write(enrolPlayer)
-		def enrolDetails = (EnrolDetails)fromController.read()
+		toController.write(enrolPlayer)//Enrol
+		def enrolDetails = (EnrolDetails)fromController.read() 
 		def myPlayerId = enrolDetails.id
 		def enroled = true
 		def unclaimedPairs = 0
@@ -171,7 +171,7 @@ class PlayerManager implements CSProcess {
 					playerNames[p].write(pData[0])
 					pairsWon[p].write(" " + pData[1])
 				}
-				
+								
 				// now use pairsMap to create the board
 				def pairLocs = pairsMap.keySet()
 				pairLocs.each {loc ->
