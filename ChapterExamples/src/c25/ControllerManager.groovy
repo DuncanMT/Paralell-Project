@@ -186,7 +186,7 @@ class ControllerManager implements CSProcess{
 			def running = (pairsUnclaimed != 0)
 			
 			while (running){
-				def o = fromPlayers.read()
+			//	def o = fromPlayers.read()
 				for(int i=0; i< 2; i++){
 					
 					def playerDetails = fromPlayers.read()
@@ -208,14 +208,41 @@ class ControllerManager implements CSProcess{
 															 gameId: gameId))
 					
 				}
-				for(int i=0; i< 2; i++){
-					def ggd = fromPlayers.read()
-					def id = ggd.id
-					toPlayers[id].write(new GameDetails( playerDetails: playerMap,
-														  pairsSpecification: pairsMap,
-														 gameId: gameId))
-				}
+			
 				
+					def claimPair = fromPlayers.read()
+					def gameNo = claimPair.gameId
+					def id = claimPair.id
+					def p1 = claimPair.p1
+					def p2 = claimPair.p2
+					if ( gameId == gameNo){
+						if ((pairsMap.get(p1) != null) ) {
+							// pair can be claimed
+							//println "before remove of $p1, $p2"
+							//pairsMap.each {println "$it"}
+							pairsMap.remove(p2)
+							pairsMap.remove(p1)
+							//println "after remove of $p1, $p2"
+							//pairsMap.each {println "$it"}
+							def playerState = playerMap.get(id)
+							playerState[1] = playerState[1] + 1
+							pairsWon[id].write(" " + playerState[1])
+							playerMap.put(id, playerState)
+							pairsUnclaimed = pairsUnclaimed - 1
+							running = (pairsUnclaimed != 0)
+						}
+						else {
+							//println "cannot claim pair: $p1, $p2"
+						}
+					}
+					for(int i=0; i< 2; i++){
+						ggd = fromPlayers.read()
+						id = ggd.id
+						toPlayers[id].write(new GameDetails( playerDetails: playerMap,
+						pairsSpecification: pairsMap,
+						gameId: gameId))
+					}
+			
 								
 				/*if ( o instanceof EnrolPlayer) {
 					def playerDetails = (EnrolPlayer)o
@@ -289,7 +316,9 @@ class ControllerManager implements CSProcess{
 			dList.change(display, 0)	
 		} // end while true		
 	} // end run
-}
+	}
+
+
 
 /*for( int i =0; i< toPlayers.size(); i++){
 	if (toPlayers[i] != null){
