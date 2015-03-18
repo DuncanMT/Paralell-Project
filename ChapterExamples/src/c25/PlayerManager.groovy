@@ -200,15 +200,12 @@ class PlayerManager implements CSProcess {
 								nextPairConfig.write("SELECT NEXT PAIR")
 								switch (innerAlt.select()){
 									case NEXT:
-										nextButton.read()
-										nextPairConfig.write(" ")
-										def p1 = chosenPairs[0]
-										def p2 = chosenPairs[1]
-										changePairs(p1[0], p1[1], Color.LIGHT_GRAY, -1)
-										changePairs(p2[0], p2[1], Color.LIGHT_GRAY, -1)
-										chosenPairs = [null, null]
-										currentPair = 0
-										break
+									notMatched = false
+									toController.write(new ClaimPair ( id: myPlayerId,
+																			 gameId: gameId,
+																	   p1: chosenPairs[0],
+																	   p2: chosenPairs[1]))
+										
 									case WITHDRAW:
 										withdrawButton.read()
 										toController.write(new WithdrawFromGame(id: myPlayerId))
@@ -216,12 +213,15 @@ class PlayerManager implements CSProcess {
 										break
 								} // end inner switch
 							} else if ( matchOutcome == 1) {
-								notMatched = false
-								toController.write(new ClaimPair ( id: myPlayerId,
-												   	   			   gameId: gameId,
-																   p1: chosenPairs[0],
-																   p2: chosenPairs[1]))
-								isTurn = false
+							nextButton.read()
+							nextPairConfig.write(" ")
+							def p1 = chosenPairs[0]
+							def p2 = chosenPairs[1]
+							changePairs(p1[0], p1[1], Color.LIGHT_GRAY, -1)
+							changePairs(p2[0], p2[1], Color.LIGHT_GRAY, -1)
+							chosenPairs = [null, null]
+							currentPair = 0
+							break
 							}
 							break
 					}// end of outer switch	
