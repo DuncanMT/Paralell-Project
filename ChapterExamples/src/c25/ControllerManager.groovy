@@ -201,6 +201,11 @@ class ControllerManager implements CSProcess{
 						toPlayers[currentPlayerId] = playerToChan 
 						toPlayers[currentPlayerId].write(new EnrolDetails(id: currentPlayerId) )
 						playerMap.put(currentPlayerId, [playerName, 0]) // [name, pairs claimed]
+						def ggd = fromPlayers.read()
+						def id = ggd.id
+						toPlayers[id].write(new GameDetails( playerDetails: playerMap,
+															  pairsSpecification: pairsMap,
+															 gameId: gameId))
 					
 				}
 				for(int i=0; i< 2; i++){
