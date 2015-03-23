@@ -200,12 +200,15 @@ class PlayerManager implements CSProcess {
 								nextPairConfig.write("SELECT NEXT PAIR")
 								switch (innerAlt.select()){
 									case NEXT:
-									notMatched = false
-									toController.write(new ClaimPair ( id: myPlayerId,
-																			 gameId: gameId,
-																	   p1: chosenPairs[0],
-																	   p2: chosenPairs[1]))
-										
+										nextButton.read()
+										nextPairConfig.write(" ")
+										def p1 = chosenPairs[0]
+										def p2 = chosenPairs[1]
+										changePairs(p1[0], p1[1], Color.LIGHT_GRAY, -1)
+										changePairs(p2[0], p2[1], Color.LIGHT_GRAY, -1)
+										chosenPairs = [null, null]
+										currentPair = 0
+										break
 									case WITHDRAW:
 										withdrawButton.read()
 										toController.write(new WithdrawFromGame(id: myPlayerId))
