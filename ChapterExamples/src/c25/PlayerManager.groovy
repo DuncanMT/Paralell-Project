@@ -22,8 +22,7 @@ class PlayerManager implements CSProcess {
 	ChannelOutput getValidPoint
 	ChannelInput validPoint
 	ChannelOutput nextPairConfig
-	ChannelInput Playerturn
-	boolean isTurn = false
+	
 	int maxPlayers = 8
 	int side = 50
 	int minPairs = 3
@@ -68,7 +67,7 @@ class PlayerManager implements CSProcess {
 					xPos = xPos + graphicsPos
 					yPos = yPos + graphicsPos
 					display[cg] = new GraphicsCommand.DrawString("   ",xPos, yPos)
-					println "$cg"		
+					//println "$cg"		
 					cg = cg+1
 				}
 			}			
@@ -137,8 +136,8 @@ class PlayerManager implements CSProcess {
 		IPconfig.write("Now Connected - sending your name to Controller")
 		def enrolPlayer = new EnrolPlayer( name: playerName,
 										   toPlayerChannelLocation: fromControllerLoc)
-		toController.write(enrolPlayer)//Enrol
-		def enrolDetails = (EnrolDetails)fromController.read() 
+		toController.write(enrolPlayer)
+		def enrolDetails = (EnrolDetails)fromController.read()
 		def myPlayerId = enrolDetails.id
 		def enroled = true
 		def unclaimedPairs = 0
@@ -151,11 +150,8 @@ class PlayerManager implements CSProcess {
 			IPlabel.write("Hi " + playerName + ", you are now enroled in the PAIRS game")
 			IPconfig.write(" ")	
 			
-			//isTurn = fromController.read()
 			// main loop
-			
 			while (enroled) {
-				//if( isTurn){
 				def chosenPairs = [null, null]
 				createBoard()
 				dList.change (display, 0)
@@ -171,7 +167,7 @@ class PlayerManager implements CSProcess {
 					playerNames[p].write(pData[0])
 					pairsWon[p].write(" " + pData[1])
 				}
-								
+				
 				// now use pairsMap to create the board
 				def pairLocs = pairsMap.keySet()
 				pairLocs.each {loc ->
@@ -216,25 +212,18 @@ class PlayerManager implements CSProcess {
 										break
 								} // end inner switch
 							} else if ( matchOutcome == 1) {
-							nextButton.read()
-							nextPairConfig.write(" ")
-							def p1 = chosenPairs[0]
-							def p2 = chosenPairs[1]
-							changePairs(p1[0], p1[1], Color.LIGHT_GRAY, -1)
-							changePairs(p2[0], p2[1], Color.LIGHT_GRAY, -1)
-							chosenPairs = [null, null]
-							currentPair = 0
-							break
+								notMatched = false
+								toController.write(new ClaimPair ( id: myPlayerId,
+												   	   			   gameId: gameId,
+																   p1: chosenPairs[0],
+																   p2: chosenPairs[1]))
 							}
 							break
 					}// end of outer switch	
-				}// end of while getting two pairs
-				/*} 
-				else {
-					break
-				}*/
+				} // end of while getting two pairs
 			} // end of while enrolled loop
 			IPlabel.write("Goodbye " + playerName + ", please close game window")
 		} //end of enrolling test
 	} // end run
 }				
+				
